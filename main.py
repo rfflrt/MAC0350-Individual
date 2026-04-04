@@ -9,7 +9,7 @@ import game as g
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="/templates")
 
 @app.on_event("startup")
 async def startup():
@@ -26,7 +26,7 @@ def get_active_user(request: Request, session: Session = Depends(get_session)) -
 @app.get("/login", response_class=HTMLResponse)
 async def login_get(request: Request):
     error = request.query_params.get("error")
-    return templates.TemplateResponse(request, "login.html", {"error": error})
+    return templates.TemplateResponse(request, "login_signup.html", {"error": error})
 
 @app.post("/login")
 async def login_post(
