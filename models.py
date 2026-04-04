@@ -24,7 +24,6 @@ class UserStats(SQLModel, table=True):
     current_streak: int = Field(default=0)
     best_streak:    int = Field(default=0)
 
-
 def create_tables():
     SQLModel.metadata.create_all(engine)
 
