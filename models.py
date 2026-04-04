@@ -11,6 +11,6 @@ class User(SQLModel, table=True):
 def create_tables():
     SQLModel.metadata.create_all(engine)
 
-def get_active_user():
+def get_session():
     with Session(engine) as session:
         yield session

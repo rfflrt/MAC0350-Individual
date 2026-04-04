@@ -3,7 +3,8 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
-from models import User, get_active_user, create_tables
+from models import User, get_session, create_tables
+from typing import Optional
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -12,6 +13,13 @@ templates = Jinja2Templates(directory="templates")
 @app.on_event("startup")
 async def startup():
     create_tables()
+
+def get_active_user(request: Request, session: Session = Depends(get_session)) -> Optional[User]:
+    name = request.cookies.get("username")
+    if not name:
+         return None
+    return session.exec(select(User).where(User.name == name)).first()
+
 
 # LOGIN
 @app.get("/login", response_class=HTMLResponse)
@@ -23,7 +31,7 @@ async def login_get(request: Request):
 async def login_post(
     name: str = Form(...),
     password: str = Form(...),
-    session: Session = Depends(get_active_user)
+    session: Session = Depends(get_session)
 ):
     user = session.exec(select(User).where(User.name == name)).first()
 
@@ -49,3 +57,10 @@ async def register(
     resp = RedirectResponse("/", status_code=302)
     resp.set_cookie("username", name)
     return resp
+
+# HOME
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request, user: User = Depends(get_active_user),
+               session: Session = Depends(get_session)):
+     if not user:
+          return RedirectResponse("/login")
