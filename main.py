@@ -74,3 +74,13 @@ async def home(request: Request, user: User = Depends(get_active_user), session:
 
     return templates.TemplateResponse(request, "home.html", {
          "user": user, "powers": powers, "stats": stats, "difficulties": g.difficulties})
+
+# SHOP
+@app.get("/shop", response_class=HTMLResponse)
+async def shop_page(request: Request, user: User = Depends(get_active_user),
+              session: Session = Depends(get_session)):
+    if not user:
+        return RedirectResponse("/login")
+    powers = session.exec(select(UserPowers).where(UserPowers.user_id == user.id)).first()
+    return templates.TemplateResponse(request, "shop.html", {
+        "user": user, "powers": powers, "costs": g.POWER_COSTS})
