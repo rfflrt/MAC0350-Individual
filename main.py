@@ -16,7 +16,8 @@ async def startup():
 # LOGIN
 @app.get("/login", response_class=HTMLResponse)
 async def login_get(request: Request):
-    return templates.TemplateResponse(request, "login.html", {})
+    error = request.query_params.get("error")
+    return templates.TemplateResponse(request, "login.html", {"error": error})
 
 @app.post("/login")
 async def login_post(
@@ -27,5 +28,7 @@ async def login_post(
     user = session.exec(select(User).where(User.name == name)).first()
 
     if not user or user.password != password:
-         if not user or user.password != password:
-            return
+            return RedirectResponse("/login?error=Invalid+username+or+password", status_code=302)
+    resp = RedirectResponse("/", status_code=302)
+    resp.set_cookie("username", name)
+    return resp
