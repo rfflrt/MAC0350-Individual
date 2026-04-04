@@ -1,13 +1,17 @@
-from fastapi import FastAPI, Request, Depends, HTTPException, status, Cookie, Response, Form
+from fastapi import FastAPI, Request, Depends, HTTPException, status, Response, Form
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
-from models import User, get_active_user
+from models import User, get_active_user, create_tables
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
+
+@app.on_event("startup")
+async def startup():
+    create_tables()
 
 # LOGIN
 @app.get("/login", response_class=HTMLResponse)
@@ -24,4 +28,4 @@ async def login_post(
 
     if not user or user.password != password:
          if not user or user.password != password:
-            return """<p style="color: red;">Invalid credentials</p>"""
+            return
