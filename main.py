@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
-from models import User, get_session, create_tables
+from models import User, UserPowers, UserStats, get_session, create_tables
 from typing import Optional
 
 app = FastAPI()
@@ -53,6 +53,10 @@ async def register(
     
     user = User(name=name, password=password)
     session.add(User)
+    session.commit()
+    session.refresh(user)
+    session.add(UserPowers(user_id=user.id))
+    session.add(UserStats(user_id=user.id))
     session.commit()
     resp = RedirectResponse("/", status_code=302)
     resp.set_cookie("username", name)
