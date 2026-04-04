@@ -5,6 +5,7 @@ from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
 from models import User, UserPowers, UserStats, get_session, create_tables
 from typing import Optional
+import game as g
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -64,7 +65,12 @@ async def register(
 
 # HOME
 @app.get("/", response_class=HTMLResponse)
-async def home(request: Request, user: User = Depends(get_active_user),
-               session: Session = Depends(get_session)):
-     if not user:
-          return RedirectResponse("/login")
+async def home(request: Request, user: User = Depends(get_active_user), session: Session = Depends(get_session)):
+    if not user:
+        return RedirectResponse("/login")
+    
+    powers = session.exec(select(UserPowers).where(UserPowers.user_id == user.id)).first()
+    stats  = session.exec(select(UserStats).where(UserStats.user_id == user.id)).first()
+
+    return templates.TemplateResponse(request, "home.html", {
+         "user": user, "powers": powers, "stats": stats, "difficulties": g.difficulties})
