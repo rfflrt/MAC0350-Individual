@@ -32,3 +32,20 @@ async def login_post(
     resp = RedirectResponse("/", status_code=302)
     resp.set_cookie("username", name)
     return resp
+
+@app.post("/signup")
+async def register(
+    name: str = Form(...),
+    password: str = Form(...),
+    session: Session = Depends(get_active_user)
+):
+    existing = session.exec(select(User).where(User.name == name)).first()
+    if existing:
+         return RedirectResponse("/login?error=Username+already+exists", status_code=302)
+    
+    user = User(name=name, password=password)
+    session.add(User)
+    session.commit()
+    resp = RedirectResponse("/", status_code=302)
+    resp.set_cookie("username", name)
+    return resp
