@@ -4,3 +4,4 @@ class User(SQLModel, table=True):
     id: int | None = Field(default = None, primary_key=True)
     name: str
     password: str
+    points: int = Field(default=0)
