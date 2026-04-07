@@ -3,6 +3,11 @@ document.addEventListener("htmx:afterSwap", () => {
   if(gd) initGame(gd.dataset);
 });
 
+document.addEventListener("DOMContentLoaded", () => {
+  const gd = document.getElementById("game-data");
+  if (gd) initGame(gd.dataset);
+});
+
 timerInterval = null;
 tickInterval = null;
 
