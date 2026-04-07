@@ -116,3 +116,20 @@ def move_mines(mines, movers, rows, cols, open, flags):
             new_mines[i] = [r,c]
     
     return new_mines
+
+def power_roulette(rows, cols, mines, open, flags):
+    hidden = [(r, c) for r in range(rows) for c in range(cols)
+              if (r,c) not in open and (r,c) not in flags]
+    sample = random.sample(hidden, min(10, len(hidden)))
+    new = []
+    for r, c in sample:
+        if random.random() < 0.1:
+            return {"hit": True, "mine_cell": [r, c], "newly_open": new}
+        new.append([r, c])
+    return {"hit": False, "mine_cell": None, "newly_open": new}
+
+
+def power_hint(rows, cols, mines, open, flags):
+    safe = [(r, c) for r in range(rows) for c in range(cols)
+            if (r,c) not in mines and (r,c) not in open and (r,c) not in flags]
+    return list(random.choice(safe)) if safe else None
