@@ -295,6 +295,9 @@ def use_power(request: Request, game_id: int, power: str = Form(...),
             for r, c in res["newly_open"]:
                 open.add((r, c))
             g.open = G.to_json(open)
+    
+    elif power == "mine_freeze":
+        g.freeze_ticks = 5
 
 
 def finish_game(user: User, g: Game, won: bool, session: Session):
