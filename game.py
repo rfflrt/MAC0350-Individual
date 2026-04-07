@@ -133,3 +133,10 @@ def power_hint(rows, cols, mines, open, flags):
     safe = [(r, c) for r in range(rows) for c in range(cols)
             if (r,c) not in mines and (r,c) not in open and (r,c) not in flags]
     return list(random.choice(safe)) if safe else None
+
+def points(difficulty, time_seconds):
+    if difficulty == "custom":
+        return 0
+    base = points_base.get(difficulty, 100)
+    speed_bonus = max(0, 300 - int(time_seconds)) // 10
+    return max(10, base + speed_bonus)
