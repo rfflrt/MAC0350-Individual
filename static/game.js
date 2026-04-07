@@ -46,4 +46,49 @@ function initGame(dataset){
         return Math.max(14, Math.min(byH, byW, 40));
     }
 
+      function applySize() {
+    const el = document.getElementById("board");
+    if (!el) return;
+    const size = calcCellSize();
+    el.style.gridTemplateColumns = `repeat(${COLS}, ${size}px)`;
+    el.style.fontSize = `${Math.max(8, Math.floor(size * 0.5))}px`;
+    el.querySelectorAll(".cell").forEach(c => {
+      c.style.width  = size + "px";
+      c.style.height = size + "px";
+    });
+  }
+
+    window.addEventListener("resize", applySize);
+
+    function renderBoard(board) {
+        const board = document.getElementById("board");
+        if(!board) return;
+
+        if(!board.children.length) {
+            const size = calcCellSize();
+            board.style.gridTemplateColumns = `repeat(${cols}, ${size}px)`;
+            board.style.fontSize = `${Math.max(8, Math.floor(size * 0.5))}px`;
+
+            for(let r = 0; r < rows; r++) {
+                for(let c = 0; c < cols; c++) {
+                    const div = document.createElement("div");
+                    div.id = `c-${r}-${c}`;
+                    div.style.width  = size + "px";
+                    div.style.height = size + "px";
+                    div.addEventListener("click", ()  => handleClick(r, c));
+                    div.addEventListener("contextmenu", e => { e.preventDefault(); handleRightClick(r, c); });
+                    let pressTimer;
+                    div.addEventListener("touchstart", () => {
+                        pressTimer = setTimeout(() => { handleRightClick(r, c); pressTimer = null; }, 500);
+                    }, { passive: true });
+                    div.addEventListener("touchend", () => { if (pressTimer) clearTimeout(pressTimer); });
+                    board.appendChild(div);
+                }
+            }
+        }
+        for(const row of board)
+            for(const cell of row)
+                paintCell(cell);
+    }
+
 }
