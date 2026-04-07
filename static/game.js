@@ -130,4 +130,15 @@ function initGame(dataset){
         if (gameOver) return;
         sendAction("flag", r, c);
     }
+
+    async function sendAction(action, row, col){
+        const fd = new FormData();
+        fd.append("action", action);
+        fd.append("row", row);
+        fd.append("col", col);
+        const res  = await fetch(`/game/${game_id}/action`, {method: "POST", body: fd});
+        const data = await res.json();
+        applyUpdate(data);
+    }
+
 }
