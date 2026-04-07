@@ -46,14 +46,14 @@ async def login_post(
 async def register(
     name: str = Form(...),
     password: str = Form(...),
-    session: Session = Depends(get_active_user)
+    session: Session = Depends(get_session)
 ):
     existing = session.exec(select(User).where(User.name == name)).first()
     if existing:
          return RedirectResponse("/login?error=Username+already+exists", status_code=302)
     
     user = User(name=name, password=password)
-    session.add(User)
+    session.add(user)
     session.commit()
     session.refresh(user)
     session.add(UserPowers(user_id=user.id))
