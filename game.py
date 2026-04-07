@@ -1,5 +1,6 @@
 import random
 from collections import deque
+import json
 
 difficulties = {"easy": {"rows": 9, "cols": 9, "mines": 10},
                 "medium": {"rows": 16, "cols": 16, "mines": 40},
@@ -140,3 +141,31 @@ def points(difficulty, time_seconds):
     base = points_base.get(difficulty, 100)
     speed_bonus = max(0, 300 - int(time_seconds)) // 10
     return max(10, base + speed_bonus)
+
+def build_board(rows, cols, mine_set, open_set, flag_set, reveal_all=False):
+    board = []
+    for r in range(rows):
+        row = []
+        for c in range(cols):
+            if (r, c) in flag_set:
+                cell = {"r": r, "c": c, "state": "flag"}
+            elif (r, c) in open_set:
+                cell = {"r": r, "c": c, "state": "open",
+                        "adj": count_adj(r, c, rows, cols, mine_set), "mine": False}
+            elif reveal_all:
+                cell = {"r": r, "c": c, "state": "open",
+                        "mine": (r, c) in mine_set,
+                        "adj": count_adj(r, c, rows, cols, mine_set)}
+            else:
+                cell = {"r": r, "c": c, "state": "hidden"}
+            row.append(cell)
+        board.append(row)
+    return board
+
+
+# HELPERS
+def to_set(json_str: str):
+    return {tuple(x) for x in json.loads(json_str)}
+
+def to_json(s: set):
+    return json.dumps([list(x) for x in s])

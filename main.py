@@ -6,6 +6,8 @@ from sqlmodel import Session, select
 from models import User, UserPowers, UserStats, BestTime, Game, get_session, create_tables
 from typing import Optional
 import game as G
+import json
+import time
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -164,6 +166,93 @@ async def new_game(request: Request, difficulty: str = Form(...),
     return templates.TemplateResponse(request, "game.html", {
         "user": user, "game": g, "powers": powers,
         "power_costs": G.power_costs})
+
+@app.post("/game/{game_id}/action")
+def game_action(
+    game_id: int,
+    action: str = Form(...),
+    row: int = Form(None),
+    col: int = Form(None),
+    user: User = Depends(get_active_user),
+    session: Session = Depends(get_session)):
+    if not user:
+        return JSONResponse({"error": "not logged in"}, status_code=401)
+
+    g = session.get(Game, game_id)
+    if not g or g.user_id != user.id or g.status != "active":
+        return JSONResponse({"error": "invalid game"}, status_code=400)
+
+    mines = G.to_set(g.mines)
+    open = G.to_set(g.open)
+    flags = G.to_set(g.flags)
+    result = {}
+
+    if action == "reveal":
+        if (row, col) in open:
+            mines = {(m[0], m[1]) for m in json.loads(g.mines)}
+            chord = G.reveal_numbered(row, col, g.rows, g.cols, mines, open, flags)
+            if chord["hit_mine"]:
+                g.status = "lost"
+                g.end_time = time.time()
+                finish_game(user, g, won=False, session=session)
+                result["status"] = "lost"
+                result["mine"] = chord["mine_cell"]
+            else:
+                open |= chord["newly_open"]
+                g.open = G.to_json(open)
+                if G.won(g.rows, g.cols, g.mine_count, open):
+                    g.status   = "won"
+                    g.end_time = time.time()
+                    pts = finish_game(user, g, won=True, session=session)
+                    result["status"] = "won"
+                    result["points_earned"] = pts
+
+        elif (row, col) not in flags:
+            if not g.first_click:
+                mine_list, mover_idxs = G.place_mines(g.rows, g.cols, g.mine_count, row, col)
+                g.mines = json.dumps(mine_list)
+                g.mover_index = json.dumps(list(mover_idxs))
+                g.first_click = True
+                g.start_time = time.time()
+
+            mine_set = {(m[0], m[1]) for m in json.loads(g.mines)}
+
+            if (row, col) in mine_set:
+                g.status   = "lost"
+                g.end_time = time.time()
+                finish_game(user, g, won=False, session=session)
+                result["status"] = "lost"
+                result["mine"] = [row, col]
+            
+            else:
+                new = G.reveal(row, col, g.rows, g.cols, mine_set, open, flags)
+                open |= new
+                g.open = G.to_json(open)
+                if G.is_won(g.rows, g.cols, g.mine_count, open):
+                    g.status   = "won"
+                    g.end_time = time.time()
+                    pts = finish_game(user, g, won=True, session=session)
+                    result["status"]        = "won"
+                    result["points_earned"] = pts
+
+    elif action == "flag":
+        if (row, col) not in open:
+            if (row, col) in flags:
+                flags.discard((row, col))
+            else:
+                flags.add((row, col))
+            g.flags = G.to_json(flags)
+
+    session.add(g)
+    session.commit()
+
+    mines = G.to_set(g.mines)
+
+    result.setdefault("status", "ok")
+    result["board"] = G.build_board(g.rows, g.cols, mine_set, open, flags, reveal_all=(g.status != "active"))
+    result["flags_remaining"] = g.mine_count - len(flags)
+    result["freeze_ticks"] = g.freeze_ticks
+    return JSONResponse(result)
 
 def finish_game(user: User, g: Game, won: bool, session: Session):
     stats = session.exec(select(UserStats).where(UserStats.user_id == user.id)).first()
