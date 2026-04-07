@@ -1,0 +1,41 @@
+<div id="shop-grid" class="shop-grid">
+
+    {% if error %}
+    <p class="error">{{ error }}</p>
+    {% endif %}
+
+    <p>
+        You have <strong> {{ user.points }} points</strong>
+    </p>
+
+    {% set items = [
+        ("good_start", "Good Start", "Reveals the largest safe empty region.", powers.good_start),
+        ("russian_roulette", "Russian Roulette", "Reveals 10 random cells — each has 1/10 chance of being a mine.", powers.russian_roulette),
+        ("mine_freeze", "Mine Freeze", "Stops mines moving for 5 turns.", powers.mine_freeze),
+        ("hint", "Hint", "Reveals one guaranteed safe cell.", powers.hint),] %}
+
+    {% for key, icon, name, desc, owned in items %}
+    <div class="shop-card">
+        <div class="shop-icon">{{ icon }}</div>
+        <h3>{{ name }}</h3>
+        <p>{{ desc }}</p>
+        <p><small>Owned: <strong>{{ owned }}</strong> | Cost: <strong>{{ costs[key] }}pts</strong></small></p>
+        <div class="shop-actions">
+        <button
+            hx-post="/shop/buy"
+            hx-vals='{"power": "{{ key }}", "qty": "1"}'
+            hx-target="#shop-grid"
+            hx-swap="outerHTML">
+            Buy 1 ({{ costs[key] }}pts)
+        </button>
+        <button
+            hx-post="/shop/buy"
+            hx-vals='{"power": "{{ key }}", "qty": "3"}'
+            hx-target="#shop-grid"
+            hx-swap="outerHTML">
+            Buy 3 ({{ costs[key] * 3 }}pts)
+        </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
