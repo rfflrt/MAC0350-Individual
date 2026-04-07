@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>SignUp — Minesweeper3000</title>
+        <title>SignUp - Minesweeper3000</title>
         <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.js" integrity="sha384-ezjq8118wdwdRMj+nX4bevEi+cDLTbhLAeFF688VK8tPDGeLUe0WoY2MZtSla72F" crossorigin="anonymous"></script>
         <link rel="stylesheet" href="/static/style.css">
         <script>
@@ -20,7 +20,7 @@
             <h1>Minesweeper3000</h1>
             <div class="login-tabs">
                 <button onclick="showTab('login')"    id="tab-login"    class="tab active">Login</button>
-                <button onclick="showTab('register')" id="tab-register" class="tab">Register</button>
+                <button onclick="showTab('register')" id="tab-register" class="tab">SignUp</button>
             </div>
             {% if error %}
             <p class="error">{{error}}</p>
@@ -34,7 +34,7 @@
                 <button type="submit">Login</button>                
             </form>
 
-            <form id="form-register" method="POST" action="/signup">
+            <form id="form-register" method="POST" action="/signup" class="hidden">
                 <input name="name" type="text" placeholder="Username">
                 <input name="password" type="password" placeholder="Password">
                 <button type="submit">SignUp</button>
