@@ -119,4 +119,15 @@ function initGame(dataset){
         else
         el.classList.add(isHint ? "cell-hint" : "cell-hidden");
     }
+
+    function handleClick(r, c){
+        if (gameOver) return;
+        if(flagMode) sendAction("flag", r, c);
+        else sendAction("reveal", r, c);
+    }
+    
+    function handleRightClick(r, c){
+        if (gameOver) return;
+        sendAction("flag", r, c);
+    }
 }
