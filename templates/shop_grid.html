@@ -27,13 +27,6 @@
             hx-swap="outerHTML">
             Buy 1 ({{ costs[key] }}pts)
         </button>
-        <button
-            hx-post="/shop/buy"
-            hx-vals='{"power": "{{ key }}", "qty": "3"}'
-            hx-target="#shop-grid"
-            hx-swap="outerHTML">
-            Buy 3 ({{ costs[key] * 3 }}pts)
-        </button>
         </div>
     </div>
     {% endfor %}
