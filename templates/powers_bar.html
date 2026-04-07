@@ -1,0 +1,25 @@
+<div id="powers-bar" class="powers-bar">
+    {% if game.status == "active" %}
+
+    {% set pw_list = [
+        ("good_start", "Good Start", powers.good_start),
+        ("russian_roulette", "Roulette", powers.russian_roulette),
+        ("mine_freeze", "Freeze (5t)", powers.mine_freeze),
+        ("hint", "Hint", powers.hint)] %}
+
+    {% for key, icon, label, count in pw_list %}
+        <button hx-post="/game/{{ game.id }}/power"
+                hx-vals='{"power": "{{ key }}"}'
+                hx-target="#powers-bar"
+                hx-swap="outerHTML"
+                {% if count == 0 %}disabled{% endif %}
+                title="{{ label }} — {{ count }} charge(s) left">
+                {{ icon }} {{ label }} ({{ count }})
+        </button>
+    {% endfor %}
+
+    {% if game.freeze_ticks > 0 %}
+    <span class="freeze-indicator">Frozen: {{ game.freeze_ticks }} turns left</span>
+    {% endif %}
+    {% endif %}
+</div>
