@@ -195,9 +195,8 @@ function initGame(dataset){
         over.classList.remove("hidden");
     }
 
-  renderBoard(
-    Array.from({ length: rows }, (_, r) =>
-      Array.from({ length: cols }, (_, c) => ({ r, c, state: "hidden" }))
-    )
-  );
+    renderBoard(
+        Array.from({ length: rows }, (_, r) =>
+            Array.from({ length: cols }, (_, c) => ({ r, c, state: "hidden" })))
+    );
 }
