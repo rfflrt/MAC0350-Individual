@@ -41,8 +41,8 @@ class Game(SQLModel, table=True):
 
     freeze_ticks: int = Field(default=0)
     first_click: bool = Field(default=False)
-    start_time: float = Field(default=None)
-    end_time: float = Field(default=None)
+    start_time: float | None = Field(default=None)
+    end_time: float | None = Field(default=None)
 
 
 class BestTime(SQLModel, table=True):

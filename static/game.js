@@ -66,7 +66,7 @@ function initGame(dataset){
 
     window.addEventListener("resize", applySize);
 
-    function renderBoard(board){
+    function renderBoard(boardData){
         const board = document.getElementById("board");
         if(!board) return;
 
@@ -92,7 +92,8 @@ function initGame(dataset){
                 }
             }
         }
-        for(const row of board)
+        
+        for(const row of boardData)
             for(const cell of row)
                 paintCell(cell);
     }

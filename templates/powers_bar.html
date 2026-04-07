@@ -6,7 +6,7 @@
         ("mine_freeze", "Freeze (5t)", powers.mine_freeze),
         ("hint", "Hint", powers.hint)] %}
 
-    {% for key, icon, label, count in pw_list %}
+    {% for key, label, count in pw_list %}
         <button hx-post="/game/{{ game.id }}/power"
                 hx-vals='{"power": "{{ key }}"}'
                 hx-target="#powers-bar"
