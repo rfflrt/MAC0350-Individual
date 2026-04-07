@@ -281,7 +281,6 @@ def use_power(request: Request, game_id: int, power: str = Form(...),
     g.powers_used = json.dumps(used)
 
     board_data = {}
-    extra_html = ""
 
     if power == "russian_roulette":
         res = G.power_roulette(g.rows, g.cols, mines, open, flags)
@@ -298,6 +297,33 @@ def use_power(request: Request, game_id: int, power: str = Form(...),
     
     elif power == "mine_freeze":
         g.freeze_ticks = 5
+    
+    elif power == "hint":
+        hint = G.power_hint(g.rows, g.cols, mine_set, open, flags)
+        board_data["hint_cell"] = hint
+
+    if g.status == "active" and G.won(g.rows, g.cols, g.mine_count, open):
+        g.status = "won"
+        g.end_time = time.time()
+        pts = finish_game(user, g, won=True, session=session)
+        board_data["status"] = "won"
+        board_data["points_earned"] = pts
+
+    session.add(g)
+    session.add(powers)
+    session.commit()
+
+    mine_set = G.to_set(g.mines)
+
+    board_data["board"] = G.build_board(g.rows, g.cols, mine_set, open, flags,
+                                        reveal_all=(g.status != "active"))
+    board_data["flags_remaining"] = g.mine_count - len(flags)
+    board_data["freeze_ticks"] = g.freeze_ticks
+
+    response = templates.TemplateResponse(request, "powers_bar.html", {
+        "game": g, "powers": powers, "power_costs": G.power_costs})
+    response.headers["HX-Trigger"] = json.dumps({"boardUpdate": board_data})
+    return response
 
 
 def finish_game(user: User, g: Game, won: bool, session: Session):
