@@ -146,6 +146,11 @@ function initGame(dataset){
 
         if(data.board) renderBoard(data.board);
 
+        if(data.flags_remaining !== undefined){
+            const mine_ct = document.getElementById("mine-count");
+            if(mine_ct) mine_ct.textContent = data.flags_remaining;
+        }
+
         if(data.hint_cell){
             hintCell = data.hint_cell;
             const [hr, hc] = hintCell;
