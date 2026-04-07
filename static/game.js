@@ -23,7 +23,7 @@ function initGame(dataset){
       `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
     }, 500);
 
-    window.toggleFlag = function () {
+    window.toggleFlag = function (){
     flagMode = !flagMode;
     const lbl = document.getElementById("flag-label");
     const btn = document.getElementById("flag-btn");
@@ -46,7 +46,7 @@ function initGame(dataset){
         return Math.max(14, Math.min(byH, byW, 40));
     }
 
-      function applySize() {
+      function applySize(){
     const el = document.getElementById("board");
     if (!el) return;
     const size = calcCellSize();
@@ -60,17 +60,17 @@ function initGame(dataset){
 
     window.addEventListener("resize", applySize);
 
-    function renderBoard(board) {
+    function renderBoard(board){
         const board = document.getElementById("board");
         if(!board) return;
 
-        if(!board.children.length) {
+        if(!board.children.length){
             const size = calcCellSize();
             board.style.gridTemplateColumns = `repeat(${cols}, ${size}px)`;
             board.style.fontSize = `${Math.max(8, Math.floor(size * 0.5))}px`;
 
-            for(let r = 0; r < rows; r++) {
-                for(let c = 0; c < cols; c++) {
+            for(let r = 0; r < rows; r++){
+                for(let c = 0; c < cols; c++){
                     const div = document.createElement("div");
                     div.id = `c-${r}-${c}`;
                     div.style.width  = size + "px";
@@ -91,4 +91,32 @@ function initGame(dataset){
                 paintCell(cell);
     }
 
+    function paintCell(data){
+        const cell = document.getElementById(`c-${data.r}-${data.c}`);
+        if(!cell) return;
+        cell.className = "cell";
+        cell.textContent = "";
+
+        const isHint = hintCell && hintCell[0] === data.r && hintCell[1] === data.c;
+
+        if (data.state === "flag"){
+            cell.classList.add("cell-flag");
+            cell.textContent = "🚩";
+        }
+        else if(data.state === "open"){
+            if(data.mine){
+                cell.classList.add("cell-mine");
+                cell.textContent = "💣";
+            }
+            else{
+                cell.classList.add("cell-open");
+                if(data.adj > 0){
+                    cell.textContent = data.adj;
+                    cell.classList.add(`n${data.adj}`);
+                }
+            }
+        }
+        else
+        el.classList.add(isHint ? "cell-hint" : "cell-hidden");
+    }
 }
