@@ -11,7 +11,6 @@ class User(SQLModel, table=True):
 class UserPowers(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="user.id", unique=True)
-    good_start: int = Field(default=0)
     russian_roulette: int = Field(default=0)
     mine_freeze: int = Field(default=0)
     hint: int = Field(default=0)

@@ -12,6 +12,7 @@ timerInterval = null;
 tickInterval = null;
 
 function initGame(dataset){
+    console.log("initGame called")
     const game_id = parseInt(dataset.gameId)
     const rows = parseInt(dataset.rows)
     const cols = parseInt(dataset.cols)
@@ -30,19 +31,18 @@ function initGame(dataset){
     }, 500);
 
     window.toggleFlag = function (){
-    flagMode = !flagMode;
-    const lbl = document.getElementById("flag-label");
-    const btn = document.getElementById("flag-btn");
-    if (lbl) lbl.textContent = flagMode ? "ON" : "OFF";
-    if (btn) btn.classList.toggle("active", flagMode);
+        flagMode = !flagMode;
+        const lbl = document.getElementById("flag-label");
+        const btn = document.getElementById("flag-btn");
+        if (lbl) lbl.textContent = flagMode ? "ON" : "OFF";
+        if (btn) btn.classList.toggle("active", flagMode);
     };
 
     function calcCellSize(){
         const hud = document.querySelector(".hud");
         const powers = document.querySelector(".powers-bar");
         const nav = document.querySelector("nav");
-        const usedH  = nav.offsetHeight + hud.offsetHeight + powers.offsetHeight + 24;
-
+        const usedH = (nav?.offsetHeight || 10) + (hud?.offsetHeight || 10) + (powers?.offsetHeight || 10) + 24;
         const availH = window.innerHeight - usedH;
         const availW = window.innerWidth  - 16;
 
@@ -56,7 +56,7 @@ function initGame(dataset){
     const el = document.getElementById("board");
     if (!el) return;
     const size = calcCellSize();
-    el.style.gridTemplateColumns = `repeat(${COLS}, ${size}px)`;
+    el.style.gridTemplateColumns = `repeat(${cols}, ${size}px)`;
     el.style.fontSize = `${Math.max(8, Math.floor(size * 0.5))}px`;
     el.querySelectorAll(".cell").forEach(c => {
       c.style.width  = size + "px";
@@ -79,6 +79,7 @@ function initGame(dataset){
                 for(let c = 0; c < cols; c++){
                     const div = document.createElement("div");
                     div.id = `c-${r}-${c}`;
+                    div.className = "cell"
                     div.style.width  = size + "px";
                     div.style.height = size + "px";
                     div.addEventListener("click", ()  => handleClick(r, c));
@@ -92,7 +93,7 @@ function initGame(dataset){
                 }
             }
         }
-        
+
         for(const row of boardData)
             for(const cell of row)
                 paintCell(cell);
@@ -124,7 +125,7 @@ function initGame(dataset){
             }
         }
         else
-        el.classList.add(isHint ? "cell-hint" : "cell-hidden");
+        cell.classList.add(isHint ? "cell-hint" : "cell-hidden");
     }
 
     function handleClick(r, c){

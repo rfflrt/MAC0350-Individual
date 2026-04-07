@@ -106,7 +106,7 @@ async def buy(request: Request, power: str = Form(...), user: User = Depends(get
         session.refresh(user)
         session.refresh(powers)
     
-    resp = templates.TemplateResponse(request, "shop_grid.html", {"user": user, "powers": powers, "costs": G.POWER_COSTS, "error": error})
+    resp = templates.TemplateResponse(request, "shop_grid.html", {"user": user, "powers": powers, "costs": G.power_costs, "error": error})
     return resp
 
 # LEADERBOARD
@@ -228,7 +228,7 @@ def game_action(
                 new = G.reveal(row, col, g.rows, g.cols, mine_set, open, flags)
                 open |= new
                 g.open = G.to_json(open)
-                if G.is_won(g.rows, g.cols, g.mine_count, open):
+                if G.won(g.rows, g.cols, g.mine_count, open):
                     g.status   = "won"
                     g.end_time = time.time()
                     pts = finish_game(user, g, won=True, session=session)
@@ -249,7 +249,7 @@ def game_action(
     mines = G.to_set(g.mines)
 
     result.setdefault("status", "ok")
-    result["board"] = G.build_board(g.rows, g.cols, mine_set, open, flags, reveal_all=(g.status != "active"))
+    result["board"] = G.build_board(g.rows, g.cols, mines, open, flags, reveal_all=(g.status != "active"))
     result["flags_remaining"] = g.mine_count - len(flags)
     result["freeze_ticks"] = g.freeze_ticks
     return JSONResponse(result)
@@ -271,9 +271,9 @@ def use_power(request: Request, game_id: int, power: str = Form(...),
     if owned <= 0:
         return HTMLResponse("", status_code=400)
 
-    mines = G.to_set(g.mines_json)
-    open = G.to_set(g.open_json)
-    flags = G.to_set(g.flags_json)
+    mines = G.to_set(g.mines)
+    open = G.to_set(g.open)
+    flags = G.to_set(g.flags)
 
     setattr(powers, power, owned - 1)
     used = json.loads(g.powers_used)

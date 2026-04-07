@@ -22,7 +22,7 @@ def place_mines(rows, cols, count, safeR, safeC):
     mines = random.sample(candidates, count)
 
     movers_qty = len(mines) * 0.1
-    movers = set(random.sample(range(len(mines)), movers_qty))
+    movers = set(random.sample(range(len(mines)), int(movers_qty)))
 
     return mines, movers
 
