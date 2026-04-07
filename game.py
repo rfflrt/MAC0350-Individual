@@ -89,3 +89,30 @@ def reveal_numbered(r, c, rows, cols, mines, open, flags):
 
 def won(rows, cols, mine_count, open):
     return len(open) == rows * cols - mine_count
+
+def move_mines(mines, movers, rows, cols, open, flags):
+    new_mines = [None] * len(mines)
+    for i, (r,c) in enumerate(mines):
+        if i not in movers:
+            new_mines[i] = [r,c]
+            continue
+
+        if (r,c) in flags:
+            new_mines[i] = [r,c]
+            continue
+
+        possible = [(r+dr, c+dc) for dr in range(-1, 2) for dc in range(-1,2)
+                    if not (dr == 0 or dc == 0)
+                    and 0 <= r+dr and r+dr < rows
+                    and 0 <= c+dc and c+dc < cols
+                    and (r+dr, c+dc) not in open
+                    and (r+dr, c+dc) not in flags
+                    and (r+dr, c+dc) not in mines]
+        
+        if possible:
+            nr, nc = random.choice(possible)
+            new_mines[i] = [nr,nc]
+        else:
+            new_mines[i] = [r,c]
+    
+    return new_mines
