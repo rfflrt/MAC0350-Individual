@@ -164,3 +164,22 @@ async def new_game(request: Request, difficulty: str = Form(...),
     return templates.TemplateResponse(request, "game.html", {
         "user": user, "game": g, "powers": powers,
         "power_costs": G.power_costs})
+
+def finish_game(user: User, g: Game, won: bool, session: Session):
+    stats = session.exec(select(UserStats).where(UserStats.user_id == user.id)).first()
+    if won:
+        stats.games_won += 1
+        stats.current_streak += 1
+        stats.best_streak = max(stats.best_streak, stats.current_streak)
+        elapsed = g.end_time - g.start_time
+        pts     = G.points(g.difficulty, elapsed)
+        user.points += pts
+        session.add(user)
+        if g.difficulty != "custom":
+            session.add(BestTime(user_id=user.id, difficulty=g.difficulty, time_seconds=elapsed))
+    else:
+        stats.games_lost     += 1
+        stats.current_streak  = 0
+        pts = 0
+    session.add(stats)
+    return pts
