@@ -80,7 +80,7 @@ def reveal_numbered(r, c, rows, cols, mines, open, flags):
             continue
 
         if (nr, nc) in mines:
-            return {"newly_open": newly_open, "hit_mine": True, "mine_cell": [nr, nc]}
+            return {"newly_open": new, "hit_mine": True, "mine_cell": [nr, nc]}
 
         new_cell = reveal(nr, nc, rows, cols, mines, open | new, flags)
         new |= new_cell
