@@ -254,6 +254,49 @@ def game_action(
     result["freeze_ticks"] = g.freeze_ticks
     return JSONResponse(result)
 
+@app.post("/game/{game_id}/power", response_class=HTMLResponse)
+def use_power(request: Request, game_id: int, power: str = Form(...),
+    user: User = Depends(get_active_user), session: Session = Depends(get_session)):
+
+    if not user:
+        return HTMLResponse("", status_code=401)
+
+    g = session.get(Game, game_id)
+    powers = session.exec(select(UserPowers).where(UserPowers.user_id == user.id)).first()
+
+    if not g or g.user_id != user.id or g.status != "active":
+        return HTMLResponse("", status_code=400)
+
+    owned = getattr(powers, power, 0)
+    if owned <= 0:
+        return HTMLResponse("", status_code=400)
+
+    mines = G.to_set(g.mines_json)
+    open = G.to_set(g.open_json)
+    flags = G.to_set(g.flags_json)
+
+    setattr(powers, power, owned - 1)
+    used = json.loads(g.powers_used)
+    used.append(power)
+    g.powers_used = json.dumps(used)
+
+    board_data = {}
+    extra_html = ""
+
+    if power == "russian_roulette":
+        res = G.power_roulette(g.rows, g.cols, mines, open, flags)
+        if res["hit"]:
+            g.status   = "lost"
+            g.end_time = time.time()
+            finish_game(user, g, won=False, session=session)
+            board_data["status"]   = "lost"
+            board_data["mine"]     = res["mine_cell"]
+        else:
+            for r, c in res["newly_open"]:
+                open.add((r, c))
+            g.open = G.to_json(open)
+
+
 def finish_game(user: User, g: Game, won: bool, session: Session):
     stats = session.exec(select(UserStats).where(UserStats.user_id == user.id)).first()
     if won:
