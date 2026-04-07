@@ -1,4 +1,5 @@
 import random
+from collections import deque
 
 difficulties = {"easy": {"rows": 9, "cols": 9, "mines": 10},
                 "medium": {"rows": 16, "cols": 16, "mines": 40},
@@ -30,3 +31,29 @@ def count_adj(r, c, rows, cols, mines):
         for dc in range(-1,2):
             if (r+dr,c+dc) in mines:
                 count += 1
+    return count
+
+def reveal(r, c, rows, cols, mines, open, flags):
+    if (r,c) in mines or (r,c) in open or (r,c) in flags:
+        return set()
+    
+    new = set()
+    queue = deque([(r,c)])
+    visited={(r,c)}
+
+    while queue:
+        cr, cc = queue.popleft()
+        new.add((cr, cc))
+        if count_adj(cr, cc, rows, cols, mines) == 0:
+            for dr in range(-1, 2):
+                for dc in range(-1, 2):
+                    nr, nc = cr+dr, cc+dc
+                    if (0 <= nr and nr < rows
+                        and 0 <= nc and nc < cols
+                        and (nr, nc) not in visited
+                        and (nr, nc) not in mines
+                        and (nr, nc) not in flags
+                        and (nr, nc) not in open):
+                        visited.add((nr, nc))
+                        queue.append((nr, nc))
+    return new
