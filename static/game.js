@@ -141,4 +141,28 @@ function initGame(dataset){
         applyUpdate(data);
     }
 
+    function applyUpdate(data){
+        if(!timerStart && data.status !== "lost") timerStart = Date.now();
+
+        if(data.board) renderBoard(data.board);
+
+        if(data.hint_cell){
+            hintCell = data.hint_cell;
+            const [hr, hc] = hintCell;
+            paintCell({ r: hr, c: hc, state: "hidden" });
+            setTimeout(() => {
+                hintCell = null;
+                paintCell({ r: hr, c: hc, state: "hidden" });
+            }, 5000);
+        }
+
+        if(data.status === "won"){
+            gameOver = true;
+            showOverlay("🏆", "You won!", data.points_earned ? `+${data.points_earned} points!` : "");
+        }
+        else if(data.status === "lost"){
+            gameOver = true;
+            showOverlay("💥", "BOOM!", "You hit a mine.");
+        }
+    }
 }
