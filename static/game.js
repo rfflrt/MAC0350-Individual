@@ -30,4 +30,20 @@ function initGame(dataset){
     if (lbl) lbl.textContent = flagMode ? "ON" : "OFF";
     if (btn) btn.classList.toggle("active", flagMode);
     };
+
+    function calcCellSize(){
+        const hud = document.querySelector(".hud");
+        const powers = document.querySelector(".powers-bar");
+        const nav = document.querySelector("nav");
+        const usedH  = nav.offsetHeight + hud.offsetHeight + powers.offsetHeight + 24;
+
+        const availH = window.innerHeight - usedH;
+        const availW = window.innerWidth  - 16;
+
+        const byH = Math.floor(availH / rows);
+        const byW = Math.floor(availW / cols);
+
+        return Math.max(14, Math.min(byH, byW, 40));
+    }
+
 }
