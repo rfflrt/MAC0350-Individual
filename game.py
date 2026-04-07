@@ -57,3 +57,35 @@ def reveal(r, c, rows, cols, mines, open, flags):
                         visited.add((nr, nc))
                         queue.append((nr, nc))
     return new
+
+def reveal_numbered(r, c, rows, cols, mines, open, flags):
+    if (r, c) not in open:
+        return {"newly_open": set(), "hit_mine": False, "mine_cell": None}
+
+    adj_count  = count_adj(r, c, rows, cols, mines)
+    neighbours = [(r+dr, c+dc)
+                  for dr in range(-1, 2) for dc in range(-1, 2)
+                  if not (dr == dc == 0)
+                  and 0 <= r+dr and r+dr < rows
+                  and 0 <= c+dc and c+dc < cols]
+
+    flag_count = sum(1 for nr, nc in neighbours if (nr, nc) in flags)
+
+    if flag_count != adj_count:
+        return {"newly_open": set(), "hit_mine": False, "mine_cell": None}
+
+    new = set()
+    for nr, nc in neighbours:
+        if (nr, nc) in flags or (nr, nc) in open:
+            continue
+
+        if (nr, nc) in mines:
+            return {"newly_open": newly_open, "hit_mine": True, "mine_cell": [nr, nc]}
+
+        new_cell = reveal(nr, nc, rows, cols, mines, open | new, flags)
+        new |= new_cell
+
+    return {"newly_open": new, "hit_mine": False, "mine_cell": None}
+
+def won(rows, cols, mine_count, open):
+    return len(open) == rows * cols - mine_count
