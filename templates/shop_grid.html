@@ -23,7 +23,7 @@
         <div class="shop-actions">
         <button
             hx-post="/shop/buy"
-            hx-vals='{"power": "{{ key }}", "qty": "1"}'
+            hx-vals='{"power": "{{ key }}"}'
             hx-target="#shop-grid"
             hx-swap="outerHTML">
             Buy 1 ({{ costs[key] }}pts)
