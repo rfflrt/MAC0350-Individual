@@ -14,9 +14,8 @@
         ("mine_freeze", "Mine Freeze", "Stops mines moving for 5 turns.", powers.mine_freeze),
         ("hint", "Hint", "Reveals one guaranteed safe cell.", powers.hint),] %}
 
-    {% for key, icon, name, desc, owned in items %}
+    {% for key, name, desc, owned in items %}
     <div class="shop-card">
-        <div class="shop-icon">{{ icon }}</div>
         <h3>{{ name }}</h3>
         <p>{{ desc }}</p>
         <p><small>Owned: <strong>{{ owned }}</strong> | Cost: <strong>{{ costs[key] }}pts</strong></small></p>

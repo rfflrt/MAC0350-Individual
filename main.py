@@ -82,7 +82,7 @@ async def shop_page(request: Request, user: User = Depends(get_active_user), ses
         return RedirectResponse("/login")
     powers = session.exec(select(UserPowers).where(UserPowers.user_id == user.id)).first()
     return templates.TemplateResponse(request, "shop.html", {
-        "user": user, "powers": powers, "costs": g.POWER_COSTS})
+        "user": user, "powers": powers, "costs": g.power_costs})
 
 @app.post("/shop/buy", response_class=HTMLResponse)
 async def buy(request: Request, power: str = Form(...), user: User = Depends(get_active_user), session: Session = Depends(get_session)):
