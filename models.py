@@ -6,14 +6,6 @@ class User(SQLModel, table=True):
     id: int | None = Field(default = None, primary_key=True)
     name: str
     password: str
-    points: int = Field(default=0)
-
-class UserPowers(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True)
-    user_id: int = Field(foreign_key="user.id", unique=True)
-    russian_roulette: int = Field(default=0)
-    mine_freeze: int = Field(default=0)
-    hint: int = Field(default=0)
 
 class UserStats(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
@@ -35,7 +27,6 @@ class Game(SQLModel, table=True):
     mines: str = Field(default="[]")
     open: str = Field(default="[]")
     flags: str = Field(default="[]")
-    powers_used: str = Field(default="[]")
     mover_index: str = Field(default="[]")
 
     freeze_ticks: int = Field(default=0)

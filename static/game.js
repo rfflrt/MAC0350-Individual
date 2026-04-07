@@ -40,9 +40,8 @@ function initGame(dataset){
 
     function calcCellSize(){
         const hud = document.querySelector(".hud");
-        const powers = document.querySelector(".powers-bar");
         const nav = document.querySelector("nav");
-        const usedH = (nav?.offsetHeight || 10) + (hud?.offsetHeight || 10) + (powers?.offsetHeight || 10) + 24;
+        const usedH = (nav?.offsetHeight || 10) + (hud?.offsetHeight || 10) + 24;
         const availH = window.innerHeight - usedH;
         const availW = window.innerWidth  - 16;
 
@@ -171,7 +170,7 @@ function initGame(dataset){
 
         if(data.status === "won"){
             gameOver = true;
-            showOverlay("🏆", "You won!", data.points_earned ? `+${data.points_earned} points!` : "");
+            showOverlay("🏆", "You won!");
         }
         else if(data.status === "lost"){
             gameOver = true;

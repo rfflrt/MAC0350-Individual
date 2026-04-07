@@ -6,11 +6,6 @@ difficulties = {"easy": {"rows": 9, "cols": 9, "mines": 10},
                 "medium": {"rows": 16, "cols": 16, "mines": 40},
                 "hard": {"rows": 16, "cols": 30, "mines": 99}}
 
-power_costs = {"russian_roulette": 20,
-                "mine_freeze": 40, "hint": 25}
-
-points_base = {"easy": 50, "medium": 150, "hard": 400}
-
 def place_mines(rows, cols, count, safeR, safeC):
     safe = {(safeR + r, safeC + c)
         for r in range(-1, 2) for c in range(-1, 2)
@@ -118,44 +113,20 @@ def move_mines(mines, movers, rows, cols, open, flags):
     
     return new_mines
 
-def power_roulette(rows, cols, mines, open, flags):
-    hidden = [(r, c) for r in range(rows) for c in range(cols)
-              if (r,c) not in open and (r,c) not in flags]
-    sample = random.sample(hidden, min(10, len(hidden)))
-    new = []
-    for r, c in sample:
-        if random.random() < 0.1:
-            return {"hit": True, "mine_cell": [r, c], "newly_open": new}
-        new.append([r, c])
-    return {"hit": False, "mine_cell": None, "newly_open": new}
-
-
-def power_hint(rows, cols, mines, open, flags):
-    safe = [(r, c) for r in range(rows) for c in range(cols)
-            if (r,c) not in mines and (r,c) not in open and (r,c) not in flags]
-    return list(random.choice(safe)) if safe else None
-
-def points(difficulty, time_seconds):
-    if difficulty == "custom":
-        return 0
-    base = points_base.get(difficulty, 100)
-    speed_bonus = max(0, 300 - int(time_seconds)) // 10
-    return max(10, base + speed_bonus)
-
-def build_board(rows, cols, mine_set, open_set, flag_set, reveal_all=False):
+def build_board(rows, cols, mines, open, flags, reveal_all=False):
     board = []
     for r in range(rows):
         row = []
         for c in range(cols):
-            if (r, c) in flag_set:
+            if (r, c) in flags:
                 cell = {"r": r, "c": c, "state": "flag"}
-            elif (r, c) in open_set:
+            elif (r, c) in open:
                 cell = {"r": r, "c": c, "state": "open",
-                        "adj": count_adj(r, c, rows, cols, mine_set), "mine": False}
+                        "adj": count_adj(r, c, rows, cols, mines), "mine": False}
             elif reveal_all:
                 cell = {"r": r, "c": c, "state": "open",
-                        "mine": (r, c) in mine_set,
-                        "adj": count_adj(r, c, rows, cols, mine_set)}
+                        "mine": (r, c) in mines,
+                        "adj": count_adj(r, c, rows, cols, mines)}
             else:
                 cell = {"r": r, "c": c, "state": "hidden"}
             row.append(cell)

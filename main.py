@@ -3,7 +3,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
-from models import User, UserPowers, UserStats, BestTime, Game, get_session, create_tables
+from models import User, UserStats, BestTime, Game, get_session, create_tables
 from typing import Optional
 import game as G
 import json
@@ -58,11 +58,16 @@ async def register(
     session.add(user)
     session.commit()
     session.refresh(user)
-    session.add(UserPowers(user_id=user.id))
     session.add(UserStats(user_id=user.id))
     session.commit()
     resp = RedirectResponse("/", status_code=302)
     resp.set_cookie("username", name)
+    return resp
+
+@app.get("/logout")
+def logout():
+    resp = RedirectResponse("/login", status_code=302)
+    resp.delete_cookie("username")
     return resp
 
 # HOME
@@ -71,43 +76,11 @@ async def home(request: Request, user: User = Depends(get_active_user), session:
     if not user:
         return RedirectResponse("/login")
     
-    powers = session.exec(select(UserPowers).where(UserPowers.user_id == user.id)).first()
     stats  = session.exec(select(UserStats).where(UserStats.user_id == user.id)).first()
 
-    return templates.TemplateResponse(request, "home.html", {
-         "user": user, "powers": powers, "stats": stats, "difficulties": G.difficulties})
-
-# SHOP
-@app.get("/shop", response_class=HTMLResponse)
-async def shop_page(request: Request, user: User = Depends(get_active_user), session: Session = Depends(get_session)):
-    if not user:
-        return RedirectResponse("/login")
-    powers = session.exec(select(UserPowers).where(UserPowers.user_id == user.id)).first()
-    return templates.TemplateResponse(request, "shop.html", {
-        "user": user, "powers": powers, "costs": G.power_costs})
-
-@app.post("/shop/buy", response_class=HTMLResponse)
-async def buy(request: Request, power: str = Form(...), user: User = Depends(get_active_user), session: Session = Depends(get_session)):
-    if not user:
-        return RedirectResponse("/login")
-    
-    cost = G.power_costs.get(power, 0)
-    powers = session.exec(select(UserPowers).where(UserPowers.user_id == user.id)).first()
-    error = None
-
-    if user.points < cost:
-        error = "Not enough points"
-    else:
-        user.points -= cost
-        setattr(powers, power, getattr(powers, power) + 1)
-        session.add(user)
-        session.add(powers)
-        session.commit()
-        session.refresh(user)
-        session.refresh(powers)
-    
-    resp = templates.TemplateResponse(request, "shop_grid.html", {"user": user, "powers": powers, "costs": G.power_costs, "error": error})
-    return resp
+    template = "home_partial.html" if request.headers.get("HX-Request") else "home.html"
+    return templates.TemplateResponse(request, template, {
+         "user": user, "stats": stats, "difficulties": G.difficulties})
 
 # LEADERBOARD
 @app.get("/leaderboard", response_class=HTMLResponse)
@@ -161,11 +134,8 @@ async def new_game(request: Request, difficulty: str = Form(...),
     session.commit()
     session.refresh(g)
 
-    powers = session.exec(select(UserPowers).where(UserPowers.user_id == user.id)).first()
-
     return templates.TemplateResponse(request, "game.html", {
-        "user": user, "game": g, "powers": powers,
-        "power_costs": G.power_costs})
+        "user": user, "game": g})
 
 @app.post("/game/{game_id}/action")
 def game_action(
@@ -203,9 +173,8 @@ def game_action(
                 if G.won(g.rows, g.cols, g.mine_count, open):
                     g.status   = "won"
                     g.end_time = time.time()
-                    pts = finish_game(user, g, won=True, session=session)
+                    finish_game(user, g, won=True, session=session)
                     result["status"] = "won"
-                    result["points_earned"] = pts
 
         elif (row, col) not in flags:
             if not g.first_click:
@@ -215,9 +184,9 @@ def game_action(
                 g.first_click = True
                 g.start_time = time.time()
 
-            mine_set = {(m[0], m[1]) for m in json.loads(g.mines)}
+            mines = {(m[0], m[1]) for m in json.loads(g.mines)}
 
-            if (row, col) in mine_set:
+            if (row, col) in mines:
                 g.status   = "lost"
                 g.end_time = time.time()
                 finish_game(user, g, won=False, session=session)
@@ -225,7 +194,7 @@ def game_action(
                 result["mine"] = [row, col]
             
             else:
-                new = G.reveal(row, col, g.rows, g.cols, mine_set, open, flags)
+                new = G.reveal(row, col, g.rows, g.cols, mines, open, flags)
                 open |= new
                 g.open = G.to_json(open)
                 if G.won(g.rows, g.cols, g.mine_count, open):
@@ -233,7 +202,6 @@ def game_action(
                     g.end_time = time.time()
                     pts = finish_game(user, g, won=True, session=session)
                     result["status"]        = "won"
-                    result["points_earned"] = pts
 
     elif action == "flag":
         if (row, col) not in open:
@@ -253,77 +221,6 @@ def game_action(
     result["flags_remaining"] = g.mine_count - len(flags)
     result["freeze_ticks"] = g.freeze_ticks
     return JSONResponse(result)
-
-@app.post("/game/{game_id}/power", response_class=HTMLResponse)
-def use_power(request: Request, game_id: int, power: str = Form(...),
-    user: User = Depends(get_active_user), session: Session = Depends(get_session)):
-
-    if not user:
-        return HTMLResponse("", status_code=401)
-
-    g = session.get(Game, game_id)
-    powers = session.exec(select(UserPowers).where(UserPowers.user_id == user.id)).first()
-
-    if not g or g.user_id != user.id or g.status != "active":
-        return HTMLResponse("", status_code=400)
-
-    owned = getattr(powers, power, 0)
-    if owned <= 0:
-        return HTMLResponse("", status_code=400)
-
-    mines = G.to_set(g.mines)
-    open = G.to_set(g.open)
-    flags = G.to_set(g.flags)
-
-    setattr(powers, power, owned - 1)
-    used = json.loads(g.powers_used)
-    used.append(power)
-    g.powers_used = json.dumps(used)
-
-    board_data = {}
-
-    if power == "russian_roulette":
-        res = G.power_roulette(g.rows, g.cols, mines, open, flags)
-        if res["hit"]:
-            g.status   = "lost"
-            g.end_time = time.time()
-            finish_game(user, g, won=False, session=session)
-            board_data["status"]   = "lost"
-            board_data["mine"]     = res["mine_cell"]
-        else:
-            for r, c in res["newly_open"]:
-                open.add((r, c))
-            g.open = G.to_json(open)
-    
-    elif power == "mine_freeze":
-        g.freeze_ticks = 5
-    
-    elif power == "hint":
-        hint = G.power_hint(g.rows, g.cols, mine_set, open, flags)
-        board_data["hint_cell"] = hint
-
-    if g.status == "active" and G.won(g.rows, g.cols, g.mine_count, open):
-        g.status = "won"
-        g.end_time = time.time()
-        pts = finish_game(user, g, won=True, session=session)
-        board_data["status"] = "won"
-        board_data["points_earned"] = pts
-
-    session.add(g)
-    session.add(powers)
-    session.commit()
-
-    mine_set = G.to_set(g.mines)
-
-    board_data["board"] = G.build_board(g.rows, g.cols, mine_set, open, flags,
-                                        reveal_all=(g.status != "active"))
-    board_data["flags_remaining"] = g.mine_count - len(flags)
-    board_data["freeze_ticks"] = g.freeze_ticks
-
-    response = templates.TemplateResponse(request, "powers_bar.html", {
-        "game": g, "powers": powers, "power_costs": G.power_costs})
-    response.headers["HX-Trigger"] = json.dumps({"boardUpdate": board_data})
-    return response
 
 @app.post("/game/{game_id}/tick")
 def game_tick(game_id: int, user: User = Depends(get_active_user), session: Session = Depends(get_session)):
@@ -345,19 +242,19 @@ def game_tick(game_id: int, user: User = Depends(get_active_user), session: Sess
         return JSONResponse({
             "moved": False, "frozen": True,
             "freeze_ticks": g.freeze_ticks,
-            "board": G.build_board(g.rows, g.cols, mine_set, open, flags)})
+            "board": G.build_board(g.rows, g.cols, mines, open, flags)})
 
     mine_list = json.loads(g.mines)
     mover_idxs = set(json.loads(g.mover_index))
     mine_list  = G.move_mines(mine_list, mover_idxs, g.rows, g.cols, open, flags)
-    mine_set = {(m[0], m[1]) for m in mine_list}
+    mines = {(m[0], m[1]) for m in mine_list}
     g.mines = json.dumps(mine_list)
     session.add(g)
     session.commit()
 
     return JSONResponse({
         "moved": True, "freeze_ticks": 0,
-        "board": G.build_board(g.rows, g.cols, mine_set, open, flags)})
+        "board": G.build_board(g.rows, g.cols, mines, open, flags)})
 
 def finish_game(user: User, g: Game, won: bool, session: Session):
     stats = session.exec(select(UserStats).where(UserStats.user_id == user.id)).first()
@@ -366,14 +263,10 @@ def finish_game(user: User, g: Game, won: bool, session: Session):
         stats.current_streak += 1
         stats.best_streak = max(stats.best_streak, stats.current_streak)
         elapsed = g.end_time - g.start_time
-        pts     = G.points(g.difficulty, elapsed)
-        user.points += pts
         session.add(user)
         if g.difficulty != "custom":
             session.add(BestTime(user_id=user.id, difficulty=g.difficulty, time_seconds=elapsed))
     else:
         stats.games_lost     += 1
         stats.current_streak  = 0
-        pts = 0
     session.add(stats)
-    return pts
