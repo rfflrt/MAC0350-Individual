@@ -4,6 +4,7 @@ document.addEventListener("htmx:afterSwap", () => {
 });
 
 timerInterval = null;
+tickInterval = null;
 
 function initGame(dataset){
     const game_id = parseInt(dataset.gameId)
@@ -170,4 +171,15 @@ function initGame(dataset){
             showOverlay("💥", "BOOM!", "You hit a mine.");
         }
     }
+
+    tickInterval = setInterval(async () => {
+        if(gameOver || !document.getElementById("board")){
+            clearInterval(tickInterval);
+            return;
+        }
+        const res  = await fetch(`/game/${game_id}/tick`, { method: "POST" });
+        const data = await res.json();
+        if (data.board) renderBoard(data.board);
+    }, 2000);
+
 }
