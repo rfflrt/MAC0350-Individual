@@ -3,9 +3,9 @@ from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
-from models import User, UserPowers, UserStats, BestTime, get_session, create_tables
+from models import User, UserPowers, UserStats, BestTime, Game, get_session, create_tables
 from typing import Optional
-import game as g
+import game as G
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -73,7 +73,7 @@ async def home(request: Request, user: User = Depends(get_active_user), session:
     stats  = session.exec(select(UserStats).where(UserStats.user_id == user.id)).first()
 
     return templates.TemplateResponse(request, "home.html", {
-         "user": user, "powers": powers, "stats": stats, "difficulties": g.difficulties})
+         "user": user, "powers": powers, "stats": stats, "difficulties": G.difficulties})
 
 # SHOP
 @app.get("/shop", response_class=HTMLResponse)
@@ -82,14 +82,14 @@ async def shop_page(request: Request, user: User = Depends(get_active_user), ses
         return RedirectResponse("/login")
     powers = session.exec(select(UserPowers).where(UserPowers.user_id == user.id)).first()
     return templates.TemplateResponse(request, "shop.html", {
-        "user": user, "powers": powers, "costs": g.power_costs})
+        "user": user, "powers": powers, "costs": G.power_costs})
 
 @app.post("/shop/buy", response_class=HTMLResponse)
 async def buy(request: Request, power: str = Form(...), user: User = Depends(get_active_user), session: Session = Depends(get_session)):
     if not user:
         return RedirectResponse("/login")
     
-    cost = g.power_costs.get(power, 0)
+    cost = G.power_costs.get(power, 0)
     powers = session.exec(select(UserPowers).where(UserPowers.user_id == user.id)).first()
     error = None
 
@@ -104,7 +104,7 @@ async def buy(request: Request, power: str = Form(...), user: User = Depends(get
         session.refresh(user)
         session.refresh(powers)
     
-    resp = templates.TemplateResponse(request, "shop_grid.html", {"user": user, "powers": powers, "costs": g.POWER_COSTS, "error": error})
+    resp = templates.TemplateResponse(request, "shop_grid.html", {"user": user, "powers": powers, "costs": G.POWER_COSTS, "error": error})
     return resp
 
 # LEADERBOARD
@@ -129,3 +129,38 @@ async def leaderboard(request: Request, user: User = Depends(get_active_user), s
         "best_times": best_times,
         "most_wins": [(u.name, s.games_won, s.best_streak) for s, u in most_wins[:10]],
     })
+
+# GAME
+@app.post("/game/new", response_class=HTMLResponse)
+async def new_game(request: Request, difficulty: str = Form(...),
+    custom_rows:  int = Form(None),
+    custom_cols:  int = Form(None),
+    custom_mines: int = Form(None),
+    user: User = Depends(get_active_user),
+    session: Session = Depends(get_session)):
+    
+    if not user:
+        return RedirectResponse("/login")
+
+    if difficulty in G.difficulties:
+        d = G.difficulties[difficulty]
+        rows, cols, mines = d["rows"], d["cols"], d["mines"]
+    
+    else:
+        difficulty = "custom"
+        rows  = max(5,  min(30,  custom_rows  or 10))
+        cols  = max(5,  min(50,  custom_cols  or 10))
+        mines = max(1,  min(rows * cols - 9, custom_mines or 10))
+
+    g = Game(user_id=user.id, difficulty=difficulty,
+             rows=rows, cols=cols, mine_count=mines)
+    
+    session.add(g)
+    session.commit()
+    session.refresh(g)
+
+    powers = session.exec(select(UserPowers).where(UserPowers.user_id == user.id)).first()
+
+    return templates.TemplateResponse(request, "game.html", {
+        "user": user, "game": g, "powers": powers,
+        "power_costs": G.power_costs})
