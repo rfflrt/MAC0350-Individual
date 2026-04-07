@@ -21,5 +21,13 @@ function initGame(dataset){
     const timer = document.getElementById("timer");
     if (timer) timer.textContent =
       `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
-  }, 500);
+    }, 500);
+
+    window.toggleFlag = function () {
+    flagMode = !flagMode;
+    const lbl = document.getElementById("flag-label");
+    const btn = document.getElementById("flag-btn");
+    if (lbl) lbl.textContent = flagMode ? "ON" : "OFF";
+    if (btn) btn.classList.toggle("active", flagMode);
+    };
 }
