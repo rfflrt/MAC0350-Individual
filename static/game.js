@@ -182,4 +182,22 @@ function initGame(dataset){
         if (data.board) renderBoard(data.board);
     }, 2000);
 
+    document.body.removeEventListener("boardUpdate", window._boardUpdateHandler);
+    window._boardUpdateHandler = e => applyUpdate(e.detail);
+    document.body.addEventListener("boardUpdate", window._boardUpdateHandler);
+
+    function showOverlay(icon, title, msg) {
+        const over = document.getElementById("overlay");
+        if (!over) return;
+        document.getElementById("overlay-icon").textContent = icon;
+        document.getElementById("overlay-title").textContent = title;
+        document.getElementById("overlay-msg").textContent = msg;
+        over.classList.remove("hidden");
+    }
+
+  renderBoard(
+    Array.from({ length: rows }, (_, r) =>
+      Array.from({ length: cols }, (_, c) => ({ r, c, state: "hidden" }))
+    )
+  );
 }
