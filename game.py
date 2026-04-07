@@ -11,7 +11,7 @@ points_base = {"easy": 50, "medium": 150, "hard": 400}
 
 def place_mines(rows, cols, count, safeR, safeC):
     safe = {(safeR + r, safeC + c)
-        for r in range(-1, 1) for c in range(-1, 1)
+        for r in range(-1, 2) for c in range(-1, 2)
         if 0 <= safeR+r and safeR+r < rows and
         0 <= safeC+c and safeC+c < cols}
     
@@ -23,3 +23,10 @@ def place_mines(rows, cols, count, safeR, safeC):
     movers = set(random.sample(range(len(mines)), movers_qty))
 
     return mines, movers
+
+def count_adj(r, c, rows, cols, mines):
+    count = 0
+    for dr in range(-1,2):
+        for dc in range(-1,2):
+            if (r+dr,c+dc) in mines:
+                count += 1
