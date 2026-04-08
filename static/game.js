@@ -54,7 +54,7 @@ function initGame(dataset){
         const byH = Math.floor(availH / rows);
         const byW = Math.floor(availW / cols);
 
-        return Math.max(24, Math.min(byH, byW, 40));
+        return Math.min(byH, byW, 40);
     }
 
     function applySize(){

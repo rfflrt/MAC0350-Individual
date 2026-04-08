@@ -9,7 +9,7 @@
 .hud button, .hud a { font-size: .82rem; padding: .35rem .65rem; }
 
 #board-wrap {
-  overflow: visible;
+  overflow: auto;
   margin: 0 auto;
   display: flex;
   justify-content: center;

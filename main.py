@@ -89,7 +89,7 @@ async def leaderboard(request: Request, user: User = Depends(get_active_user), s
         return RedirectResponse("/login")
 
     best_times = {}
-    for diff in ["easy", "medium", "hard"]:
+    for diff in ["easy", "medium", "hard", "medium (Mobile)", "hard (Mobile)"]:
         rows = session.exec(select(BestTime, User).join(User, BestTime.user_id == User.id).where(BestTime.difficulty == diff).order_by(BestTime.time_seconds)).all()
         seen = {}
         for bt, u in rows:

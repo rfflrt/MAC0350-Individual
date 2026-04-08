@@ -4,7 +4,7 @@
 {% block content %}
 <h2>Leaderboard</h2>
 <div class="lb-grid">
-    {% for diff in ["easy", "medium", "hard"] %}
+    {% for diff in ["easy", "medium", "hard", "medium (Mobile)", "hard (Mobile)"] %}
     <section class="card">
         <h3>Fastest - {{ diff }}</h3>
         {% if best_times[diff] %}

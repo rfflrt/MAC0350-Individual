@@ -4,7 +4,9 @@ import json
 
 difficulties = {"easy": {"rows": 9, "cols": 9, "mines": 10},
                 "medium": {"rows": 16, "cols": 16, "mines": 40},
-                "hard": {"rows": 25, "cols": 25, "mines": 150}}
+                "medium (Mobile)": {"rows": 15, "cols": 10, "mines": 30},
+                "hard": {"rows": 20, "cols": 20, "mines": 110},
+                "hard (Mobile)": {"rows": 20, "cols": 10, "mines": 80}}
 
 def place_mines(rows, cols, count, safeR, safeC):
     safe = {(safeR + r, safeC + c)
