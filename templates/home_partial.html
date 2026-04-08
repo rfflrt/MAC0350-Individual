@@ -4,7 +4,7 @@
     <form hx-post="/game/new" hx-target="#main" hx-swap="innerHTML">
         <div class="diff-buttons">
             {% for name, d in difficulties.items() %}
-            <button type="submit" name="difficulty" value="{{ name }}">
+            <button type="submit" name="difficulty" value="{{ name }}" class="{% if 'Mobile' in name %}mobile{% elif 'easy' in name %}mobile,desktop{% else %}desktop{% endif %}">
                 {{ name|capitalize }}
                 <small>{{ d.rows }}X{{ d.cols }}, {{ d.mines }} mines</small>
             </button>
