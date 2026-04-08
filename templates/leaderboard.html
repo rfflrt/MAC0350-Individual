@@ -23,16 +23,16 @@
     {% endfor %}
 
     <section class="card">
-        <h3>Most Wins</h3>
+        <h3>Wins</h3>
         <input type="text"  
             placeholder="Search"
             hx-get="/leaderboard"
-            hx-target=".lb-table"
+            hx-target="#wins"
             hx-trigger="input changed delay:500ms"
-            hx-select=".lb-table"
+            hx-select="#wins"
             name="busca">
         {% if most_wins %}
-        <table class="lb-table">
+        <table id="wins" class="lb-table">
         <tr><th>#</th><th>Player</th><th>Wins</th><th>Streak</th></tr>
         {% for name, wins, streak in most_wins %}
         <tr>

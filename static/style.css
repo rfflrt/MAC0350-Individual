@@ -1,6 +1,6 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-body { font-family: system-ui, sans-serif; background: #f3f4f6; color: #111; }
+body { font-family: system-ui, sans-serif; background: #ffffff; color: #111; }
 
 nav {
   background: #1f2937; color: white;
@@ -23,8 +23,8 @@ h3 { margin-bottom: .75rem; color: #374151; }
 .error { color: #dc2626; font-size: .9rem; }
 
 .card {
-  background: white; border-radius: 8px; padding: 1.25rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,.1);
+  background: rgb(255, 255, 255); border-radius: 8px; padding: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.238);
 }
 
 .home-grid { 
@@ -79,12 +79,16 @@ button:disabled { background: #9ca3af; cursor: not-allowed; }
   gap: 1rem; 
 }
 
+.lb-table { 
+  display: block;
+  height: 150px;
+  overflow-y: auto;
+  width: 100%; 
+  border-collapse: collapse; 
+}
 .lb-table { width: 100%; border-collapse: collapse; }
 .lb-table th { font-size: .75rem; color: #9ca3af; text-align: left; padding: .3rem .4rem; border-bottom: 1px solid #e5e7eb; }
 .lb-table td { padding: .35rem .4rem; border-bottom: 1px solid #f9fafb; font-size: .88rem; }
-.gold   td { color: #92400e; font-weight: 600; }
-.silver td { color: #6b7280; font-weight: 600; }
-.bronze td { color: #9a3412; }
 
 .htmx-request { opacity: .6; pointer-events: none; }
 
