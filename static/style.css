@@ -92,6 +92,10 @@ button:disabled { background: #9ca3af; cursor: not-allowed; }
 .tab        { flex: 1; padding: .5rem; background: white; border: none; cursor: pointer; font-size: .9rem; color: #6b7280; }
 .tab.active { background: #2563eb; color: white; }
 
+.desktop {
+  display: none; 
+}
+
 @media (min-width: 600px) {
   nav {
     flex-direction: row;
@@ -108,6 +112,7 @@ button:disabled { background: #9ca3af; cursor: not-allowed; }
   }
 }
 
+
 @media (min-width: 900px) {
   .home-grid {
     grid-template-columns: repeat(3, 1fr);
@@ -116,9 +121,10 @@ button:disabled { background: #9ca3af; cursor: not-allowed; }
   .lb-grid {
     grid-template-columns: repeat(4, 1fr);
   }
-
-
+  
+  
 }
+
 
 @media (min-height: 700px) {
   .login-box {
@@ -126,9 +132,6 @@ button:disabled { background: #9ca3af; cursor: not-allowed; }
   }
 }
 
-.desktop {
-  display: none; 
-}
 
 @media (min-width: 600px) {
   .mobile {
