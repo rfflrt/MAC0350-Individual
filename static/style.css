@@ -72,7 +72,6 @@ button:disabled { background: #9ca3af; cursor: not-allowed; }
 .info-table { width: 100%; border-collapse: collapse; margin-bottom: .75rem; }
 .info-table td { padding: .3rem .4rem; border-bottom: 1px solid #f3f4f6; font-size: .9rem; }
 .info-table td:last-child { text-align: right; font-weight: 600; }
-
 .lb-grid { 
   display: grid; 
   grid-template-columns: 1fr; 
