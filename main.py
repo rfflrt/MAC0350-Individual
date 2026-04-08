@@ -219,7 +219,6 @@ def game_action(
     result.setdefault("status", "ok")
     result["board"] = G.build_board(g.rows, g.cols, mines, open, flags, reveal_all=(g.status != "active"))
     result["flags_remaining"] = g.mine_count - len(flags)
-    result["freeze_ticks"] = g.freeze_ticks
     return JSONResponse(result)
 
 @app.post("/game/{game_id}/tick")
@@ -235,15 +234,6 @@ def game_tick(game_id: int, user: User = Depends(get_active_user), session: Sess
     open = G.to_set(g.open)
     flags = G.to_set(g.flags)
 
-    if g.freeze_ticks > 0:
-        g.freeze_ticks -= 1
-        session.add(g)
-        session.commit()
-        return JSONResponse({
-            "moved": False, "frozen": True,
-            "freeze_ticks": g.freeze_ticks,
-            "board": G.build_board(g.rows, g.cols, mines, open, flags)})
-
     mine_list = json.loads(g.mines)
     mover_idxs = set(json.loads(g.mover_index))
     mine_list  = G.move_mines(mine_list, mover_idxs, g.rows, g.cols, open, flags)
@@ -253,8 +243,7 @@ def game_tick(game_id: int, user: User = Depends(get_active_user), session: Sess
     session.commit()
 
     return JSONResponse({
-        "moved": True, "freeze_ticks": 0,
-        "board": G.build_board(g.rows, g.cols, mines, open, flags)})
+        "moved": True, "board": G.build_board(g.rows, g.cols, mines, open, flags)})
 
 def finish_game(user: User, g: Game, won: bool, session: Session):
     stats = session.exec(select(UserStats).where(UserStats.user_id == user.id)).first()
