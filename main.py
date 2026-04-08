@@ -84,7 +84,7 @@ async def home(request: Request, user: User = Depends(get_active_user), session:
 
 # LEADERBOARD
 @app.get("/leaderboard", response_class=HTMLResponse)
-async def leaderboard(request: Request, user: User = Depends(get_active_user), session: Session = Depends(get_session)):
+async def leaderboard(request: Request, user: User = Depends(get_active_user), session: Session = Depends(get_session), busca: str | None=''):
     if not user:
         return RedirectResponse("/login")
 
@@ -95,9 +95,9 @@ async def leaderboard(request: Request, user: User = Depends(get_active_user), s
         for bt, u in rows:
             if u.name not in seen:
                 seen[u.name] = round(bt.time_seconds, 1)
-        best_times[diff] = list(seen.items())[:10]
+        best_times[diff] = list(seen.items())
 
-    most_wins = session.exec(select(UserStats, User).join(User, UserStats.user_id == User.id).order_by(UserStats.games_won.desc())).all()
+    most_wins = session.exec(select(UserStats, User).join(User, UserStats.user_id == User.id).where(User.name.contains(busca)).order_by(UserStats.games_won.desc())).all()
 
     return templates.TemplateResponse(request, "leaderboard.html", {
         "user": user,
