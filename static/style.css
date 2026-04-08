@@ -78,6 +78,7 @@ button:disabled { background: #9ca3af; cursor: not-allowed; }
   grid-template-columns: 1fr; 
   gap: 1rem; 
 }
+
 .lb-table { width: 100%; border-collapse: collapse; }
 .lb-table th { font-size: .75rem; color: #9ca3af; text-align: left; padding: .3rem .4rem; border-bottom: 1px solid #e5e7eb; }
 .lb-table td { padding: .35rem .4rem; border-bottom: 1px solid #f9fafb; font-size: .88rem; }
