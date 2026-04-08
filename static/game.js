@@ -38,28 +38,34 @@ function initGame(dataset){
         if (btn) btn.classList.toggle("active", flagMode);
     };
 
-    function calcCellSize(){
-        const hud = document.querySelector(".hud");
-        const nav = document.querySelector("nav");
-        const usedH = (nav?.offsetHeight || 10) + (hud?.offsetHeight || 10) + 24;
-        const availH = window.innerHeight - usedH;
-        const availW = window.innerWidth  - 16;
+    function calcCellSize() {
+        const boardWrap = document.getElementById("board-wrap");
+
+        const topOffset = boardWrap
+        ? boardWrap.getBoundingClientRect().top
+        : 160;
+
+        const gap = 2;
+        const padding = 14;
+
+        const availH = window.innerHeight - topOffset - 8 - padding - ((rows - 1) * gap);
+        const availW = window.innerWidth  - 16 - padding - ((cols - 1) * gap);
 
         const byH = Math.floor(availH / rows);
         const byW = Math.floor(availW / cols);
 
-        return Math.max(14, Math.min(byH, byW, 40));
+        return Math.max(24, Math.min(byH, byW, 40));
     }
 
-      function applySize(){
-    const el = document.getElementById("board");
-    if (!el) return;
-    const size = calcCellSize();
-    el.style.gridTemplateColumns = `repeat(${cols}, ${size}px)`;
-    el.style.fontSize = `${Math.max(8, Math.floor(size * 0.5))}px`;
-    el.querySelectorAll(".cell").forEach(c => {
-      c.style.width  = size + "px";
-      c.style.height = size + "px";
+    function applySize(){
+        const el = document.getElementById("board");
+        if (!el) return;
+        const size = calcCellSize();
+        el.style.gridTemplateColumns = `repeat(${cols}, ${size}px)`;
+        el.style.fontSize = `${Math.max(8, Math.floor(size * 0.5))}px`;
+        el.querySelectorAll(".cell").forEach(c => {
+        c.style.width  = size + "px";
+        c.style.height = size + "px";
     });
   }
 
